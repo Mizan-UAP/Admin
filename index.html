@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin User</title>
+</head>
+
+<body>
+    <form action="/addItem" method="post" style=" display: grid; margin: 5px; padding: 5px;">
+        <input style="margin: 5px; padding: 5px;" type="text" placeholder="Name" name="name">
+        <input style="margin: 5px; padding: 5px;" type="text" placeholder="Price" name="price">
+        <input style="margin: 5px; padding: 5px;" type="date" placeholder="Expiry Date" name="date">
+        <button style="margin: 5px; padding: 5px;" type="submit"> Add Item</button>
+    </form>
+</body>
+<div id="item">
+</div>
+<div id="update">
+</div>
+
+<script>
+    //show data on UI
+    fetch('/items')
+        .then(response => response.json())
+        .then(list => {
+            // console.log(list);
+            const contain = document.getElementById('item');
+            list.forEach(ListItem => {
+                const paragraph = document.createElement('p')
+                paragraph.innerHTML = `Name: ${ListItem.name} <br>
+                    Price: ${ListItem.price} TK. <br>
+                    Date: ${ListItem.date} <br>
+                    <button onclick="UpdateItem('${ListItem._id}')">Update</button> 
+                    <button onclick="itemDelete(event, '${ListItem._id}')">Delete</button>
+                    `;
+                contain.appendChild(paragraph);
+            })
+
+        })
+
+    //delete one itemDelete
+    function itemDelete(event, id) {
+        fetch(`/delete/${id}`, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result) {
+                    event.target.parentNode.style.display = 'none';
+                }
+            })
+        // console.log(id)
+    }
+
+    //Update one item 
+    function UpdateItem(id) {
+        fetch(`/update/${id}`)
+            .then(response => response.json())
+            .then(result => {
+                const update = document.getElementById('update');
+                update.innerHTML = `
+                    <h3>Updating: ${result._id} </h3>
+                    Name: <input type="text" value = "${result.name}" id="name"> <br>
+                    Price: <input type="text" value = "${result.price}" id="price"><br>
+                    Date: <input type="date" value = "${result.date}" id="date"><br>
+                    <button onclick = "updateSubmit('${result._id}')">Submit</button>
+
+                     `
+            })
+        // console.log(id)
+    }
+
+    //Update Submittion
+    function updateSubmit(id) {
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const date = document.getElementById('date').value;
+            const user = { id, name, price, date }
+            // console.log(user);
+
+            fetch(`/update/${id}`, {
+                method: 'PATCH',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(user)
+            })
+                .then(response => response.json())
+                .then(result => {
+                   console.log(result);
+                })
+        }
+
+
+
+
+</script>
+
+</html>
